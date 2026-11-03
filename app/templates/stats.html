@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}{{ report.year or "All-time" }} stats · MediaGala{% endblock %}
+
+{# Vertical bars along a time or score axis. Only the highest bar carries its number;
+   hovering a bar shows its own, and the table under each chart lists them all
+   (the bars themselves are hidden from screen readers, which get the table). #}
+{% macro column_chart(chart, unit) %}
+  <div class="columns" style="--count: {{ chart.bars|length }}" aria-hidden="true">
+    {% for bar in chart.bars %}
+      <div class="column{% if bar.value == chart.peak %} is-peak{% endif %}" style="--size: {{ bar.percent_of(chart.peak) }}"
+           data-tip="{{ bar.label }}: {{ bar.value }} {{ unit }}">
+        <span class="column-value">{{ bar.value }}</span>
+        <span class="column-bar"></span>
+        <span class="column-label">{{ bar.label }}</span>
+      </div>
+    {% endfor %}
+  </div>
+  {{ chart_table(chart, unit) }}
+{% endmacro %}
+
+{# Ranked horizontal bars, largest first, each with its value at the tip. #}
+{% macro bar_chart(chart, unit) %}
+  <ul class="bars">
+    {% for bar in chart.bars %}
+      <li class="bar-row">
+        <span class="bar-label">{{ bar.label }}</span>
+        <span class="bar-track"><span class="bar-fill" style="--size: {{ bar.percent_of(chart.peak) }}%"></span></span>
+        <span class="bar-value">{{ bar.value }}<span class="sr-only"> {{ unit }}</span></span>
+      </li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{% macro chart_table(chart, unit) %}
+  <details class="chart-table">
+    <summary>Show as table</summary>
+    <table>
+      <tbody>
+        {% for bar in chart.bars %}
+          <tr><th scope="row">{{ bar.label }}</th><td>{{ bar.value }} {{ unit }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </details>
+{% endmacro %}
+
+{% block content %}
+<div class="stats-page">
+  <header class="stats-head">
+    <p class="eyebrow">Your stats</p>
+    <h1>{% if report.year %}Your {{ report.year }}{% else %}All time{% endif %}</h1>
+    <p class="stats-intro">
+      {% if report.year %}Everything you finished in {{ report.year }}.
+      {% else %}Everything in your fridge, including what you're still on.{% endif %}
+    </p>
+  </header>
+
+  <nav class="kind-tabs" aria-label="Period">
+    <a href="/stats" class="kind-tab{% if not report.year %} is-active{% endif %}"
+       {% if not report.year %}aria-current="page"{% endif %}>All time</a>
+    {% for y in report.years %}
+      <a href="/stats?year={{ y }}" class="kind-tab{% if report.year == y %} is-active{% endif %}"
+         {% if report.year == y %}aria-current="page"{% endif %}>{{ y }}</a>
+    {% endfor %}
+  </nav>
+
+  {% if not (report.finished or report.episodes or report.hours or report.pages) %}
+    <div class="empty">
+      <h2>Nothing to count yet.</h2>
+      <p>{% if report.year %}Nothing has a finish date in {{ report.year }}.{% else %}Finish something, or tick off a few episodes, and your stats show up here.{% endif %}</p>
+      <a href="/" class="btn btn-primary">Back to collection</a>
+    </div>
+  {% else %}
+    <ul class="stat-tiles">
+      <li class="stat-tile"><span class="stat-label">Finished</span><strong>{{ "{:,}".format(report.finished) }}</strong></li>
+      <li class="stat-tile"><span class="stat-label">Episodes watched</span><strong>{{ "{:,}".format(report.episodes) }}</strong></li>
+      <li class="stat-tile"><span class="stat-label">Hours played</span><strong>{{ "{:,}".format(report.hours) }}</strong></li>
+      <li class="stat-tile"><span class="stat-label">Pages read</span><strong>{{ "{:,}".format(report.pages) }}</strong></li>
+      <li class="stat-tile">
+        <span class="stat-label">Average rating</span>
+        <strong>{% if report.average_rating is not none %}{{ report.average_rating }}<small>/10</small>{% else %}–{% endif %}</strong>
+      </li>
+    </ul>
+
+    <div class="stats-grid">
+      {% if not report.over_time.is_empty %}
+        <section class="stats-card stats-wide">
+          <h2>{% if report.year %}Finished per month{% else %}Finished per year{% endif %}</h2>
+          {{ column_chart(report.over_time, "finished") }}
+        </section>
+      {% endif %}
+
+      {% if not report.by_kind.is_empty %}
+        <section class="stats-card">
+          <h2>Finished by type</h2>
+          {{ bar_chart(report.by_kind, "finished") }}
+        </section>
+      {% endif %}
+
+      {% if not report.genres.is_empty %}
+        <section class="stats-card">
+          <h2>Favourite genres</h2>
+          {{ bar_chart(report.genres, "finished") }}
+        </section>
+      {% endif %}
+
+      {% if not report.ratings.is_empty %}
+        <section class="stats-card">
+          <h2>How you rate</h2>
+          {{ column_chart(report.ratings, "titles") }}
+        </section>
+      {% endif %}
+
+      {% if not report.platforms.is_empty %}
+        <section class="stats-card">
+          <h2>Where you watch, play and read</h2>
+          {{ bar_chart(report.platforms, "finished") }}
+        </section>
+      {% endif %}
+
+      {% if report.top_rated %}
+        <section class="stats-card">
+          <h2>Top rated</h2>
+          <ol class="highlight-list">
+            {% for t in report.top_rated %}
+              <li><a href="/titles/{{ t.id }}">{{ t.title }}</a><span>★ {{ t.rating }}</span></li>
+            {% endfor %}
+          </ol>
+        </section>
+      {% endif %}
+
+      {% if report.fastest %}
+        <section class="stats-card">
+          <h2>Quickest finishes</h2>
+          <ol class="highlight-list">
+            {% for t in report.fastest %}
+              <li><a href="/titles/{{ t.id }}">{{ t.title }}</a><span>{{ t.days_spent }} {{ "day" if t.days_spent == 1 else "days" }}</span></li>
+            {% endfor %}
+          </ol>
+        </section>
+      {% endif %}
+
+      {% if report.longest_games %}
+        <section class="stats-card">
+          <h2>Longest games</h2>
+          <ol class="highlight-list">
+            {% for t in report.longest_games %}
+              <li><a href="/titles/{{ t.id }}">{{ t.title }}</a><span>{{ t.hours_played }} h</span></li>
+            {% endfor %}
+          </ol>
+        </section>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

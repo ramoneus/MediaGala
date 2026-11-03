@@ -75,6 +75,10 @@ def list_open_titles(db: Session, limit: int) -> list[Title]:
     return list(db.scalars(stmt.order_by(Title.updated_at.desc(), Title.id.desc()).limit(limit)))
 
 
+def list_all_titles(db: Session) -> list[Title]:
+    return list(db.scalars(select(Title)))
+
+
 def get_title(db: Session, title_id: int) -> Title | None:
     return db.get(Title, title_id)
 

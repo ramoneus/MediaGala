@@ -27,6 +27,9 @@
   --focus-ring: rgba(45, 111, 196, 0.22);
   --progress-from: #2d6fc4;
   --progress-to: #8cc8ff;
+  /* Bars on the stats page (checked for contrast against --surface in each theme). */
+  --chart: #2d6fc4;
+  --chart-track: #e6eef7;
   /* The header stays navy in both themes so the white "GALA" and milk glass always show. */
   --header-bg: rgba(16, 33, 58, 0.97);
   --header-border: #1d3557;
@@ -83,6 +86,8 @@
   --focus-ring: rgba(140, 200, 255, 0.25);
   --progress-from: #4a90e2;
   --progress-to: #8cc8ff;
+  --chart: #4a90e2;
+  --chart-track: #1a2a44;
   --header-bg: rgba(10, 18, 32, 0.92);
   --header-border: var(--border);
   --fridge-top: #1d304d;
@@ -2352,6 +2357,285 @@ input[type="file"]::file-selector-button:hover {
   color: inherit;
 }
 
+/* ---------- Stats page ---------- */
+
+.stats-head h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.stats-intro {
+  margin: 4px 0 20px;
+  color: var(--text-muted);
+}
+
+/* Headline numbers in one row. */
+.stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.stat-tile strong {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.stat-tile small {
+  margin-left: 2px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.stats-card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.stats-wide {
+  grid-column: 1 / -1;
+}
+
+.stats-card h2 {
+  margin: 0 0 16px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Column chart: bars grow from one baseline, square at the bottom and rounded at the top.
+   --size (0–100, set per column) is the bar's share of the tallest; the tallest bar leaves
+   room above it for its number and the tooltip. */
+.columns {
+  display: grid;
+  grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+  gap: 2px;
+  height: 180px;
+  border-bottom: 1px solid var(--border);
+}
+
+.column {
+  --top: calc(var(--size) * 1.4px); /* 140px for the tallest bar */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.column-bar {
+  width: min(24px, 70%);
+  height: var(--top);
+  border-radius: 4px 4px 0 0;
+  background: var(--chart);
+}
+
+/* Only the highest bar is labelled; the others show their number on hover. */
+.column-value {
+  position: absolute;
+  bottom: calc(var(--top) + 4px);
+  color: var(--text-soft);
+  font-size: 0.75rem;
+  font-weight: 700;
+  visibility: hidden;
+}
+
+.column.is-peak .column-value {
+  visibility: visible;
+}
+
+.column:hover .column-value {
+  visibility: hidden; /* the tooltip takes its place */
+}
+
+.column-label {
+  position: absolute;
+  top: 100%;
+  padding-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.6875rem;
+  white-space: nowrap;
+}
+
+.column:hover {
+  background: var(--surface-hover);
+  border-radius: 4px 4px 0 0;
+}
+
+.column[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(var(--top) + 6px);
+  left: 50%;
+  z-index: 2;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.chart-table {
+  margin-top: 30px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.chart-table summary {
+  cursor: pointer;
+}
+
+.chart-table table {
+  margin-top: 8px;
+  border-collapse: collapse;
+}
+
+.chart-table th,
+.chart-table td {
+  padding: 3px 16px 3px 0;
+  color: var(--text-soft);
+  font-weight: 500;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ranked bars: label, bar, and the value at the bar's tip. */
+.bars {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) 2.5rem;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+}
+
+.bar-label {
+  overflow: hidden;
+  color: var(--text-soft);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-track {
+  height: 12px;
+}
+
+.bar-fill {
+  display: block;
+  width: var(--size);
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--chart);
+}
+
+.bar-value {
+  color: var(--text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.highlight-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: rank;
+}
+
+.highlight-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  counter-increment: rank;
+}
+
+.highlight-list li::before {
+  content: counter(rank);
+  width: 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.highlight-list a {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.highlight-list a:hover {
+  text-decoration: underline;
+}
+
+.highlight-list span {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+/* "Your stats" on the freezer door. */
+.fridge-stats-link {
+  position: relative;
+  z-index: 1;
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.fridge-stats-link:hover {
+  text-decoration: underline;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
@@ -2395,6 +2679,14 @@ input[type="file"]::file-selector-button:hover {
     flex: 1;
   }
 
+  .stat-tiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   /* Title page: your log and the details go under the notes. */
   .detail-body {
     grid-template-columns: minmax(0, 1fr);
@@ -2422,6 +2714,19 @@ input[type="file"]::file-selector-button:hover {
     padding-right: 32px;
     mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
     -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  }
+
+  .stat-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Five tiles in pairs: the last one takes the whole row. */
+  .stat-tile:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .stats-head h1 {
+    font-size: 1.625rem;
   }
 
   /* Toolbar: search on its own row, then the filters two per row. */

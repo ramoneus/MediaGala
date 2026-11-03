@@ -52,6 +52,11 @@ It's built with **FastAPI**, **SQLAlchemy 2.0**, **SQLite** and **Jinja2**. It r
 - **Filter** by type, genre and watch status. A filter applies as soon as you pick it.
 - **Sort** by title, release year or rating (ascending/descending), or by date added
 - **"The fridge":** the collection overview drawn as a fridge, with one magnet per status (finished, in progress, planned, dropped); each magnet filters the list. Open the door to see what you're in the middle of (next episode, page or hours played), the last one you touched first
+- **Your stats:** a page for all time or any single year ("Your stats ›" on the fridge).
+  - Titles finished, episodes watched, hours played, pages read and your average rating.
+  - Charts of what you finished per month or year, by type, by genre and by where you watched it, plus how you rate.
+  - Your top-rated titles, quickest finishes and longest games.
+  - Every chart can also be read as a table.
 - **Persistent storage** in a local SQLite database
 - **Server-side validation** with field-level error messages
 - **Responsive** layout for desktop, tablet and mobile
