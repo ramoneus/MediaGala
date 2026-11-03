@@ -57,6 +57,7 @@ It's built with **FastAPI**, **SQLAlchemy 2.0**, **SQLite** and **Jinja2**. It r
   - Charts of what you finished per month or year, by type, by genre and by where you watched it, plus how you rate.
   - Your top-rated titles, quickest finishes and longest games.
   - Every chart can also be read as a table.
+- **Profile and yearly goals:** save your name and how many movies, series, anime, games or books you want to finish this year ("Edit profile" on the stats page). A progress bar for each goal shows on your stats.
 - **Persistent storage** in a local SQLite database
 - **Server-side validation** with field-level error messages
 - **Responsive** layout for desktop, tablet and mobile

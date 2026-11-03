@@ -49,10 +49,16 @@
 <div class="stats-page">
   <header class="stats-head">
     <p class="eyebrow">Your stats</p>
-    <h1>{% if report.year %}Your {{ report.year }}{% else %}All time{% endif %}</h1>
+    {% set owner = (report.name ~ ("'" if report.name.endswith("s") else "'s")) if report.name else "Your" %}
+    <h1>
+      {%- if report.year %}{{ owner }} {{ report.year }}
+      {%- elif report.name %}{{ owner }} all time
+      {%- else %}All time{% endif -%}
+    </h1>
     <p class="stats-intro">
       {% if report.year %}Everything you finished in {{ report.year }}.
       {% else %}Everything in your fridge, including what you're still on.{% endif %}
+      <a href="/profile" class="stats-profile-link">Edit profile</a>
     </p>
   </header>
 
@@ -82,6 +88,21 @@
         <strong>{% if report.average_rating is not none %}{{ report.average_rating }}<small>/10</small>{% else %}–{% endif %}</strong>
       </li>
     </ul>
+
+    {% if report.goals %}
+      <section class="stats-card goals-card">
+        <h2>Goals for {{ report.goal_year }}</h2>
+        <ul class="bars">
+          {% for goal in report.goals %}
+            <li class="bar-row goal-row">
+              <span class="bar-label">{{ goal.label }}</span>
+              <span class="bar-track"><span class="bar-fill" style="--size: {{ goal.percent }}%"></span></span>
+              <span class="bar-value">{{ goal.done }} / {{ goal.target }}{% if goal.reached %}<span class="sr-only"> (reached)</span>{% endif %}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
 
     <div class="stats-grid">
       {% if not report.over_time.is_empty %}

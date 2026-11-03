@@ -13,7 +13,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.database import init_db
 from app.settings import load_env_file
 from app.posters import POSTER_DIR
-from app.routers import lookup, stats, titles
+from app.routers import lookup, profile, stats, titles
 from app.templating import STATIC_DIR, templates
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ app.mount("/posters", StaticFiles(directory=POSTER_DIR), name="posters")
 app.include_router(titles.router)
 app.include_router(lookup.router)
 app.include_router(stats.router)
+app.include_router(profile.router)
 
 
 def render_error(request: Request, status_code: int, message: str) -> HTMLResponse:

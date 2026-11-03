@@ -161,3 +161,16 @@ class Season(Base):
     episode_count: Mapped[int]
 
     series: Mapped[Title] = relationship(back_populates="seasons")
+
+
+class Profile(Base):
+    """Who is using the app: a name, and how many titles of each kind you want to finish this year.
+
+    There is one profile (id 1). It is created the first time you save it.
+    """
+
+    __tablename__ = "profile"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(40), default="")
+    goals: Mapped[dict[str, int]] = mapped_column(JSON, default=dict)  # {"book": 20, "movie": 50}

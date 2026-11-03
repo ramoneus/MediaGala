@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.catalog import Kind, Status
 from app.lookup import Match
-from app.models import Episode, Season, Title
+from app.models import Episode, Profile, Season, Title
 from app.schemas import TitleIn
 
 # A title picked in an online search: the source's name ("TMDB") and its details.
@@ -77,6 +77,21 @@ def list_open_titles(db: Session, limit: int) -> list[Title]:
 
 def list_all_titles(db: Session) -> list[Title]:
     return list(db.scalars(select(Title)))
+
+
+def get_profile(db: Session) -> Profile:
+    """The saved profile, or an empty one (not stored) until it is first saved."""
+    return db.get(Profile, 1) or Profile(id=1, name="", goals={})
+
+
+def save_profile(db: Session, name: str, goals: dict[str, int]) -> None:
+    profile = db.get(Profile, 1)
+    if profile is None:
+        profile = Profile(id=1)
+        db.add(profile)
+    profile.name = name
+    profile.goals = goals
+    db.commit()
 
 
 def get_title(db: Session, title_id: int) -> Title | None:

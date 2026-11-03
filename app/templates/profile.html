@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Profile · MediaGala{% endblock %}
+
+{% block scripts %}
+<script src="{{ static_url('js/toast.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+{% if flash %}
+  <div class="toast" role="status">{{ flash }}</div>
+{% endif %}
+<div class="form-page">
+  <a href="/stats" class="back-link">← Back to your stats</a>
+  <h1>Your profile</h1>
+
+  {% if errors %}
+    <div class="flash flash-error" role="alert">Please fix the highlighted fields below.</div>
+  {% endif %}
+
+  <form method="post" action="/profile" class="title-form" novalidate>
+    <div class="form-field form-field-wide">
+      <label for="name">Name <span class="optional">(optional)</span></label>
+      <input type="text" id="name" name="name" value="{{ values.get('name', '') }}" maxlength="{{ max_name }}" autocomplete="given-name"
+             {% if errors.get('name') %}aria-invalid="true" aria-describedby="name-error"{% endif %}>
+      <p class="field-hint">Shown on your stats page.</p>
+      {% if errors.get('name') %}<p class="field-error" id="name-error">{{ errors['name'] }}</p>{% endif %}
+    </div>
+
+    <fieldset class="form-field form-field-wide">
+      <legend>Goals for this year</legend>
+      <p class="field-hint">How many of each do you want to finish? Leave a type empty to skip it. Your progress shows on your stats page.</p>
+    </fieldset>
+
+    {% for k in kinds %}
+      {% set field = "goal_" ~ k.value %}
+      <div class="form-field">
+        <label for="{{ field }}">{{ k.config.plural }}</label>
+        <input type="number" id="{{ field }}" name="{{ field }}" value="{{ values.get(field, '') }}" min="1" max="{{ max_goal }}" inputmode="numeric"
+               {% if errors.get(field) %}aria-invalid="true" aria-describedby="{{ field }}-error"{% endif %}>
+        {% if errors.get(field) %}<p class="field-error" id="{{ field }}-error">{{ errors[field] }}</p>{% endif %}
+      </div>
+    {% endfor %}
+
+    <div class="form-actions form-field-wide">
+      <a href="/stats" class="btn btn-ghost">Cancel</a>
+      <button type="submit" class="btn btn-primary">Save profile</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

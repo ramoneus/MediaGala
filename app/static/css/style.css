@@ -2427,6 +2427,30 @@ input[type="file"]::file-selector-button:hover {
   grid-column: 1 / -1;
 }
 
+.goals-card {
+  margin-bottom: 16px;
+}
+
+.goal-row {
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) 4.5rem;
+}
+
+.goal-row .bar-value {
+  text-align: right;
+}
+
+.stats-profile-link {
+  margin-left: 8px;
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.stats-profile-link:hover {
+  text-decoration: underline;
+}
+
 .stats-card h2 {
   margin: 0 0 16px;
   font-size: 1rem;

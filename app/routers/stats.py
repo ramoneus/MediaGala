@@ -20,5 +20,6 @@ def stats(
     db: Annotated[Session, Depends(get_db)],
     year: Annotated[int | None, Query(ge=1900, le=9999)] = None,
 ) -> HTMLResponse:
-    report = build_report(crud.list_all_titles(db), year)
+    profile = crud.get_profile(db)
+    report = build_report(crud.list_all_titles(db), year, profile.name, profile.goals)
     return templates.TemplateResponse(request, "stats.html", {"report": report})

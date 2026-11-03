@@ -7,6 +7,7 @@ titles you're still on. A single year counts the titles you finished that year (
 
 from collections import Counter
 from dataclasses import dataclass
+from datetime import date
 
 from app.catalog import Kind, Status
 from app.models import Title
@@ -39,7 +40,25 @@ class Chart:
 
 
 @dataclass(frozen=True)
+class Goal:
+    """How far along you are with this year's goal for one kind."""
+
+    label: str
+    done: int
+    target: int
+
+    @property
+    def percent(self) -> int:
+        return min(100, round(100 * self.done / self.target))
+
+    @property
+    def reached(self) -> bool:
+        return self.done >= self.target
+
+
+@dataclass(frozen=True)
 class Report:
+    name: str
     year: int | None  # None for all time
     years: list[int]  # every year something was finished, newest first
     finished: int
@@ -47,6 +66,8 @@ class Report:
     hours: int
     pages: int
     average_rating: float | None
+    goal_year: int  # the year the goals are for: the current one
+    goals: list[Goal]
     over_time: Chart  # finished per month (a year) or per year (all time)
     by_kind: Chart
     genres: Chart
@@ -72,7 +93,20 @@ def _ranked(counts: Counter[str]) -> Chart:
     return Chart([Bar(label, value) for label, value in counts.most_common(TOP)])
 
 
-def build_report(titles: list[Title], year: int | None) -> Report:
+def _goals(finished: list[Title], targets: dict[str, int], year: int) -> list[Goal]:
+    this_year = Counter(t.kind for t in finished if t.finished_on and t.finished_on.year == year)
+    return [Goal(kind.config.plural, this_year[kind], targets[kind.value]) for kind in Kind if kind.value in targets]
+
+
+def build_report(
+    titles: list[Title],
+    year: int | None,
+    name: str = "",
+    targets: dict[str, int] | None = None,
+    today: date | None = None,
+) -> Report:
+    """`targets` are the profile's goals for the current year, by kind ("book" -> 20)."""
+    current_year = (today or date.today()).year
     finished = [t for t in titles if t.status == Status.FINISHED]
     years = sorted({t.finished_on.year for t in finished if t.finished_on}, reverse=True)
 
@@ -94,6 +128,7 @@ def build_report(titles: list[Title], year: int | None) -> Report:
     games = [t for t in scope if t.kind == Kind.GAME and t.hours_played]
 
     return Report(
+        name=name,
         year=year,
         years=years,
         finished=len(done),
@@ -101,6 +136,9 @@ def build_report(titles: list[Title], year: int | None) -> Report:
         hours=sum(t.hours_played or 0 for t in scope if t.kind == Kind.GAME),
         pages=sum(_pages(t) for t in scope if t.kind.has_pages),
         average_rating=round(sum(t.rating for t in rated) / len(rated), 1) if rated else None,
+        goal_year=current_year,
+        # Goals are for this year, so they show on the all-time view and on this year's own tab.
+        goals=_goals(finished, targets or {}, current_year) if year in (None, current_year) else [],
         over_time=over_time,
         by_kind=Chart(sorted((Bar(k.config.plural, kinds[k]) for k in Kind if kinds[k]), key=lambda b: -b.value)),
         genres=_ranked(Counter(t.genre for t in done)),
