@@ -2355,7 +2355,9 @@ input[type="file"]::file-selector-button:hover {
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
-  /* No room for a side column: the fridge becomes a short one above the list.
+  /* No room for a side column, so the fridge stands above the list. It keeps the exact shape
+     it has on desktop (same width, magnets stacked, handles, feet), centred; only the fridge
+     part is as tall as its contents instead of a fixed minimum.
      minmax(0, 1fr) because a plain 1fr column can't shrink below its content and overflows. */
   .home {
     grid-template-columns: minmax(0, 1fr);
@@ -2364,59 +2366,20 @@ input[type="file"]::file-selector-button:hover {
 
   .fridge {
     position: static;
-  }
-
-  /* The short fridge is as wide as the page, so a stronger perspective seen from its middle
-     keeps the open door narrow. The door may still reach past the screen edge, which is
-     clipped rather than allowed to scroll the page sideways. */
-  body {
-    overflow-x: clip;
+    justify-self: center;
+    width: 236px;
+    max-width: 100%;
   }
 
   .fridge-main {
     min-height: 0;
-    perspective: 2400px;
-    perspective-origin: 50% 50%;
   }
 
-  .fridge-inside {
-    padding: 16px 16px 18px;
-  }
-
-  .door-front {
-    padding: 18px 18px 46px 44px;
-  }
-
-  .door-front .fridge-handle {
-    height: 60px;
-  }
-
-  /* The open shelves become one row you can scroll sideways. */
-  .fridge-shelves {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-  }
-
-  .fridge-shelves li {
-    display: flex;
-    flex: 0 0 auto;
-    max-width: 70%;
-    padding: 0 0 10px;
-  }
-
-  .fridge-item {
-    flex: 1;
-  }
-
-  .magnets {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .fridge-feet {
-    display: none;
+  /* The open door swings into the space to the right of the fridge, as on desktop. On a very
+     narrow phone it may reach past the screen edge, which is clipped rather than allowed to
+     scroll the page sideways. */
+  body {
+    overflow-x: clip;
   }
 
   .toolbar {
@@ -2450,19 +2413,6 @@ input[type="file"]::file-selector-button:hover {
   .eyebrow {
     font-size: 0.6875rem;
     letter-spacing: 0.12em;
-  }
-
-  .shelf-title {
-    font-size: 1.5rem;
-  }
-
-  .magnet {
-    padding: 6px 12px 8px;
-    font-size: 0.875rem;
-  }
-
-  .magnet strong {
-    font-size: 1.125rem;
   }
 
   /* Fade the right edge of the tab bar so it's clear there's more to scroll to. */
